@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Joke of the Day</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>😂 Joke of the Day</h1>
+      <div class="controls">
+        <label for="category">Category:</label>
+        <select id="category">
+          <option value="all">All</option>
+          <option value="general">General</option>
+          <option value="programming">Programming</option>
+          <option value="knock-knock">Knock Knock</option>
+        </select>
+        <button id="newJokeBtn">New Joke</button>
+      </div>
+    </header>
+
+    <main id="joke-box">
+      <div class="skeleton">
+        <div class="skeleton-line short"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line long"></div>
+      </div>
+    </main>
+
+    <footer>
+      <p>Source: <a href="https://official-joke-api.appspot.com" target="_blank">Official Joke API</a></p>
+    </footer>
+  </div>
+
+  <script>
+    const apiBase = "https://official-joke-api.appspot.com";
+    const jokeBox = document.getElementById("joke-box");
+    const categorySelect = document.getElementById("category");
+    const newJokeBtn = document.getElementById("newJokeBtn");
+
+    function showSkeleton() {
+      jokeBox.innerHTML = `
+        <div class="skeleton">
+          <div class="skeleton-line short"></div>
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line long"></div>
+        </div>
+      `;
+    }
+
+    async function fetchJoke() {
+      showSkeleton();
+      let endpoint = apiBase + "/random_joke";
+      if (categorySelect.value !== "all") {
+        endpoint = `${apiBase}/jokes/${categorySelect.value}/random`;
+      }
+
+      try {
+        const res = await fetch(endpoint);
+        if (!res.ok) throw new Error("Failed to fetch joke");
+        const data = await res.json();
+        const joke = Array.isArray(data) ? data[0] : data;
+
+        jokeBox.innerHTML = `
+          <article class="joke fade-in">
+            <h2>${joke.setup}</h2>
+            <p class="punchline">${joke.punchline}</p>
+            <small>Category: ${joke.type}</small>
+          </article>
+        `;
+      } catch (err) {
+        jokeBox.innerHTML = `
+          <p class="error">❌ Couldn’t fetch a joke. Try again!</p>
+        `;
+      }
+    }
+
+    newJokeBtn.addEventListener("click", fetchJoke);
+    categorySelect.addEventListener("change", fetchJoke);
+
+    fetchJoke();
+  </script>
+</body>
+</html>
